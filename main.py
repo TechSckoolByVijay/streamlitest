@@ -1,16 +1,28 @@
 import streamlit as st
+import os
+import importlib.util
 
-def main():
-    st.title("Simple Streamlit App")
-    
-    # Create a form
-    with st.form("user_form"):
-        name = st.text_input("Enter your name:")
-        age = st.number_input("Enter your age:", min_value=0, step=1)
-        submitted = st.form_submit_button("Submit")
-        
-        if submitted:
-            st.success(f"Hello, {name}! You are {age} years old.")
+# Set page title
+st.set_page_config(page_title="Multi-Page Streamlit App", layout="wide")
 
-if __name__ == "__main__":
-    main()
+# Sidebar navigation
+st.sidebar.title("Navigation")
+pages = {
+    "Home": "home",
+    "About": "about",
+    "Contact": "contact",
+}
+
+selection = st.sidebar.radio("Go to", list(pages.keys()))
+
+# Load the selected page dynamically
+page_module = pages[selection]
+page_path = f"features/{page_module}.py"
+
+if os.path.exists(page_path):
+    spec = importlib.util.spec_from_file_location(page_module, page_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.run()
+else:
+    st.error("Page not found!")
